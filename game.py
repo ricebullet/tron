@@ -109,7 +109,7 @@ class Game(object):
             for position in positions_range:
                 if position not in player_positions:
                     player_positions.append(position)
-        print('Range: ', positions_range)
+        # print('Range: ', positions_range)
 
     def player_creation(self):
         '''Two players are always created and are global variables. P1 is blue.
@@ -225,7 +225,6 @@ class Game(object):
 
             if P1.status == 'crashed' or P2.status == 'crashed':
                 P1.player_crashed(P2)
-                print('P2 coord:', P2.coord)
                 if os.name == 'posix':
                     os.system('afplay explosion.wav&')
                 self.draw_score()
@@ -263,7 +262,7 @@ class Player(turtle.Turtle):
         self.right(90)
 
     def accelerate(self):
-        '''Min. speed = 1, Max. speed = 2. If higher, collision detection doesn't work well'''
+        '''Min. speed = 1, Max. speed = 2.'''
         if self.fd_speed < 2:
             self.fd_speed += 1
             self.forward(self.fd_speed) # Needs to be run only if speed changes
@@ -292,14 +291,16 @@ class Player(turtle.Turtle):
                 particle.explode(self.xcor(), self.ycor())
             self.status = 'crashed'
 
-        # Player collides into other player
-        if self.coord in other.positions:
-            self.lives -= 1
-            # Particle explosion
-            for particle in particles:
-                particle.change_color(self)
-                particle.explode(self.xcor(), self.ycor())
-            self.status = 'crashed'
+        # Player collides into other player.
+        # Covers speed increase, thus 2 positions are checked
+        for position in self.positions[-2:]:
+            if position in other.positions:
+                self.lives -= 1
+                # Particle explosion
+                for particle in particles:
+                    particle.change_color(self)
+                    particle.explode(self.xcor(), self.ycor())
+                self.status = 'crashed'
 
     def crash(self):
         '''Removes lightcycle from screen'''
@@ -320,7 +321,7 @@ class Player(turtle.Turtle):
     def player_crashed(self, other):
         '''If either player crashes'''
 
-        print('Last 10 P2 positions: ', P2.positions[-10:])
+        # print('Last 10 P2 positions: ', P2.positions[-10:])
         self.crash()
         other.crash()
 
