@@ -76,7 +76,7 @@ class MainMenu(object):
         turtle.onkeypress(self.press_enter, 'space')
 
     def display_controls(self):
-        '''Displays controls creen. Nothing can be changed.'''
+        '''Displays control screen. Nothing can be changed.'''
         self.current_screen = 'controls'
         self.pen.hideturtle()
         self.screen.bgpic('controls.gif')
@@ -103,7 +103,7 @@ class MainMenu(object):
             elif self.pen.cursor_pos == 1:
                 if os.name == 'posix':
                     os.system('killall afplay')
-                turtle.bye()            
+                turtle.bye()
             else:
                 pass
         elif self.current_screen == 'grid_size':
@@ -120,10 +120,15 @@ class MainMenu(object):
             if os.name == 'posix':
                 os.system('killall afplay')
             game_on = True
-            # Run game.py
-            game.start(width, height)
-        else: # Controls screen
+            # Start game
+            self.start_game(width, height)
+            menu = MainMenu()
+        else: # Current screen: Controls
             self.display_main()
+
+    def start_game(self, width, height):
+        '''Starts the game with grid size choice.'''
+        game.start(width, height)
 
     def main_loop(self):
         game_on = False

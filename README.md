@@ -7,5 +7,5 @@ Requirements
 Usage
 - Run main.py to start.
 
-Bugs
+Known issues
 - Collision detection doesn't always work when speed increases to 2.

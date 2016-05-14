@@ -228,14 +228,14 @@ class Game(object):
                 print('P2 coord:', P2.coord)
                 if os.name == 'posix':
                     os.system('afplay explosion.wav&')
-                time.sleep(.1)
                 self.draw_score()
-
-
+        # Game ends
         self.display_winner(P1, P2)
         self.state = 'game_over'
         game_on = False
-        turtle.exitonclick()
+        # turtle.exitonclick()
+        time.sleep(3)
+        self.screen.clear()
         if os.name == 'posix':
             os.system('killall afplay')
 
@@ -329,7 +329,7 @@ class Particle(turtle.Turtle):
     '''This class is only used to create particle effects when there is a crash.'''
     def __init__(self, spriteshape, color, start_x, start_y):
         turtle.Turtle.__init__(self, shape = spriteshape)
-        self.shapesize(stretch_wid=.1, stretch_len=.1, outline=None)
+        self.shapesize(stretch_wid=.1, stretch_len=.3, outline=None)
         self.speed(0)
         self.penup()
         self.color(color)
@@ -345,7 +345,7 @@ class Particle(turtle.Turtle):
 
     def move(self):
         if self.frame > 0:
-            self.forward(10)
+            self.forward(self.fd_speed)
             self.frame += 1
         if self.frame > 10:
             self.frame = 0
