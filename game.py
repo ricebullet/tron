@@ -190,8 +190,8 @@ class Game(object):
         global game_on
         game_on = True
         if os.name == 'posix':
-            os.system('afplay son_of_flynn.wav&')
-        os.system('say initiate light cycle battle')
+            os.system('afplay son_of_flynn.m4a&')
+            os.system('say initiate light cycle battle')
         while P1.lives > 0 and P2.lives > 0:
             # Updates screen only when loop is complete
             turtle.update()
