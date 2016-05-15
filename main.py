@@ -106,7 +106,7 @@ class MainMenu(object):
                 turtle.bye()
             else:
                 pass
-                
+
         elif self.current_screen == 'grid_size':
             if self.pen.cursor_pos == 1:
                 width, height = (640, 480)
@@ -136,7 +136,7 @@ class MainMenu(object):
         # Stop music when returning from game and restart main menu music
         if os.name == 'posix':
             os.system('killall afplay')
-            os.system('afplay main_menu.wav&')
+            os.system('afplay main_menu.m4a&')
         # Change cursor based on keybindings
         while True:
             self.set_cursor()
