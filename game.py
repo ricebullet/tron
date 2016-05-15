@@ -6,22 +6,17 @@ import turtle, random, time, os, main
 # or the opponent's trails. Game resets when either player crashes.
 # Options: Grid size
 
+# Need to work on global static variables
+
 class Game(object):
     '''Creates screen, draws border, creates all sprites, maps keys, draws score, and
     game loop runs.'''
+
+    game_on = False
+
     def __init__(self,width=None,height=None):
         self.width = width
         self.height = height
-        self.create_screen()
-        self.pen = turtle.Turtle()
-        self.score_pen = turtle.Turtle()
-        self.draw_border()
-        self.player_creation()
-        self.particle_creation()
-        self.keyboard_bindings()
-        self.state = 'game_on'
-        self.draw_score()
-        self.game_loop()
 
     def screen_size(self):
         '''Only used if script runs directly.'''
@@ -51,7 +46,7 @@ class Game(object):
 
     def draw_border(self):
         '''Border is drawn from the width and height, starting in upper
-        right hand corner. Each side is 50 pixels from the screen.
+        right hand corner. Each side is 50 pixels from the edge of the screen.
          The border coordinates will be used for border detection as well.'''
         self.x_boundary = (self.width / 2) - 50
         self.y_boundary = (self.height / 2) - 50
@@ -76,14 +71,15 @@ class Game(object):
         self.pen.hideturtle()
 
     def boundary_check(self, player):
-        '''Checks if light cycle is out of bounds using border coord'''
+        '''Checks if light cycle is out of bounds using border coord.
+        Deviation of 3 on edge to cosmetically match impact.'''
         if ((player.xcor() < (-self.x_boundary + 3)) or (player.xcor() > (self.x_boundary - 3)) or
             (player.ycor() < (-self.y_boundary + 3)) or (player.ycor() > (self.y_boundary - 3))):
                 player.lives -= 1
-                for particle in particles:
+                for particle in self.particles:
                     particle.change_color(player)
                     particle.explode(player.xcor(), player.ycor())
-                player.status = 'crashed'
+                Player.status = 'crashed'
 
     def position_range_adder(self, player_positions):
         '''If speed is > 1, the positions aren't recorded in between the speed. Therefore,
@@ -109,50 +105,66 @@ class Game(object):
             for position in positions_range:
                 if position not in player_positions:
                     player_positions.append(position)
-        # print('Range: ', positions_range)
 
     def player_creation(self):
-        '''Two players are always created and are global variables. P1 is blue.
+        '''Two players are always created. P1 is blue.
         P2 is Yellow'''
-        global P1
-        global P2
         # Create player 1
-        P1 = Player('P1', -100, 100)
-        P1.speed(0)
-        P1.color('#40BBE3')
+        self.P1 = Player('P1', -100, 100)
+        self.P1.speed(0)
+        self.P1.color('#40BBE3')
 
         # Create player 2
-        P2 = Player('P2', 100, -100)
-        P2.speed(0)
-        P2.color('#E3E329')
+        self.P2 = Player('P2', 100, -100)
+        self.P2.speed(0)
+        self.P2.color('#E3E329')
 
     def particle_creation(self):
-        '''Creates particles. Particles is a global value.'''
-        global particles
-        particles = []
+        '''Creates particles list. All particles act same way.'''
+        self.particles = []
         # Number of particles
-        for i in range(15):
-            particles.append(Particle('circle', 'white', 0, 0))
+        for i in range(20):
+            self.particles.append(Particle('square', 'white', 0, 0))
 
-    def particles_explode(self, xcor, ycor):
+    def particles_explode(self, player):
         '''Makes all particles explode at player crash position'''
-        for particle in particles:
-            particle.explode(xcor, ycor)
+        for particle in self.particles:
+            particle.change_color(player)
+            particle.explode(player.xcor(), player.ycor())
+
+    def is_collision(self, player, other):
+        '''Collision check'''
+        # Player collides into own trail (suicide)
+        for position in player.positions[-4:]:
+            if position in player.positions[:-4]: # Checks the last positions too quickly
+                player.lives -= 1
+                # Particle explosion
+                self.particles_explode(player)
+                Player.status = 'crashed'
+
+        # Player collides into other player.
+        # Covers speed increase, thus 2 positions are checked
+        for position in player.positions[-2:]:
+            if position in other.positions:
+                player.lives -= 1
+                # Particle explosion
+                self.particles_explode(player)
+                Player.status = 'crashed'
 
     def keyboard_bindings(self):
         '''Maps keys to player movement.'''
         turtle.listen()
         # Set P1 keyboard bindings
-        turtle.onkeypress(P1.turn_left, 'a')
-        turtle.onkeypress(P1.turn_right, 'd')
-        turtle.onkeypress(P1.accelerate, 'w')
-        turtle.onkeypress(P1.decelerate, 's')
+        turtle.onkeypress(self.P1.turn_left, 'a')
+        turtle.onkeypress(self.P1.turn_right, 'd')
+        turtle.onkeypress(self.P1.accelerate, 'w')
+        turtle.onkeypress(self.P1.decelerate, 's')
 
         # Set P2 keyboard bindings
-        turtle.onkeypress(P2.turn_left, 'Left')
-        turtle.onkeypress(P2.turn_right, 'Right')
-        turtle.onkeypress(P2.accelerate, 'Up')
-        turtle.onkeypress(P2.decelerate, 'Down')
+        turtle.onkeypress(self.P2.turn_left, 'Left')
+        turtle.onkeypress(self.P2.turn_right, 'Right')
+        turtle.onkeypress(self.P2.accelerate, 'Up')
+        turtle.onkeypress(self.P2.decelerate, 'Down')
 
     def draw_score(self):
         '''Using a turtle, this draws the score on the screen once, then clears once
@@ -161,8 +173,8 @@ class Game(object):
         self.score_pen.setposition((self.width / -2) + 75, (self.height / 2) - 40)
         self.score_pen.pendown()
         self.score_pen.color('white')
-        p1lives = 'P1 Lives: %s' % P1.lives
-        p2lives = 'P2 Lives: %s' % P2.lives
+        p1lives = 'P1 Lives: %s' % self.P1.lives
+        p2lives = 'P2 Lives: %s' % self.P2.lives
         self.score_pen.write(p1lives, font=("Arial", 18, "bold"))
         self.score_pen.penup()
         self.score_pen.hideturtle()
@@ -178,61 +190,66 @@ class Game(object):
         self.score_pen.pendown()
         if player.lives > 0:
             winner = player.name
-            self.score_pen.write(winner + ' wins!', align='center', font=("Arial", 36, "bold"))
         else:
             winner = other.name
-            self.score_pen.write(winner + ' wins!', align='center', font=("Arial", 36, "bold"))
+        self.score_pen.write(winner + ' wins!', align='center', font=("Arial", 36, "bold"))
 
-    def game_loop(self):
+    def start_game(self):
         '''All players are set into motion, boundary checks, and collision checks
         run continuously until a player runs out of lives.'''
+
+        self.create_screen()
+        self.pen = turtle.Turtle()
+        self.draw_border()
+        self.player_creation()
+        self.keyboard_bindings()
+        self.particle_creation()
+        self.score_pen = turtle.Turtle()
+        self.draw_score()
         # Start bgm
-        global game_on
-        game_on = True
+        Game.game_on = True
         if os.name == 'posix':
             os.system('afplay son_of_flynn.m4a&')
             os.system('say initiate light cycle battle')
-        while P1.lives > 0 and P2.lives > 0:
+        while self.P1.lives > 4 and self.P2.lives > 4:
             # Updates screen only when loop is complete
             turtle.update()
             # Set default player speed
-            P1.forward(P1.fd_speed)
-            P2.forward(P2.fd_speed)
+            self.P1.forward(self.P1.fd_speed)
+            self.P2.forward(self.P2.fd_speed)
 
             # Particle movement
-            for particle in particles:
+            for particle in self.particles:
                 particle.move()
 
             # P1 Boundary check
-            self.boundary_check(P1)
+            self.boundary_check(self.P1)
             # P2 Boundary check
-            self.boundary_check(P2)
+            self.boundary_check(self.P2)
 
             # Coercing coordinates and appending to list
-            P1.convert_coord_to_int()
-            P1.positions.append(P1.coord)
-            if len(P1.positions) > 2:
-                self.position_range_adder(P1.positions)
-                P1.is_collision(P2)
+            self.P1.convert_coord_to_int()
+            self.P1.positions.append(self.P1.coord)
+            if len(self.P1.positions) > 2:
+                self.position_range_adder(self.P1.positions)
+                self.is_collision(self.P1, self.P2)
 
-            P2.convert_coord_to_int()
-            P2.positions.append(P2.coord)
-            if len(P2.positions) > 2:
-                self.position_range_adder(P2.positions)
-                P2.is_collision(P1)
+            self.P2.convert_coord_to_int()
+            self.P2.positions.append(self.P2.coord)
+            if len(self.P2.positions) > 2:
+                self.position_range_adder(self.P2.positions)
+                self.is_collision(self.P2, self.P1)
+            # print('Last 5 positions: ', self.P2.positions[-5:])
 
-
-            # print('Last 5 positions: ', P2.positions[-5:])
-
-            if P1.status == 'crashed' or P2.status == 'crashed':
-                P1.player_crashed(P2)
+            if Player.status == 'crashed':
+                self.P1.player_crashed(self.P2)
                 if os.name == 'posix':
                     os.system('afplay explosion.wav&')
                 self.draw_score()
         # Game ends
-        self.display_winner(P1, P2)
+        self.display_winner(self.P1, self.P2)
         self.state = 'game_over'
-        game_on = False
+        Game.game_on = False
         # turtle.exitonclick()
         time.sleep(3)
         self.screen.clear()
@@ -241,6 +258,9 @@ class Game(object):
 
 
 class Player(turtle.Turtle):
+
+    status = 'ready'
+
     def __init__(self, name, start_x, start_y):
         super(Player, self).__init__()
         self.name = name
@@ -252,7 +272,6 @@ class Player(turtle.Turtle):
         self.positions = []
         self.coord = (self.start_x, self.start_y)
         self.lives = 5
-        self.status = 'ready'
 
     def turn_left(self):
         '''90 Degree left turn.'''
@@ -281,29 +300,6 @@ class Player(turtle.Turtle):
         y = int(y)
         self.coord = (x, y)
 
-    def is_collision(self, other):
-        '''Collision check'''
-        # Player collides into own trail (suicide)
-        for position in self.positions[-4:]:
-            if position in self.positions[:-4]: # Checks the last positions too quickly
-                self.lives -= 1
-                # Particle explosion
-                for particle in particles:
-                    particle.change_color(self)
-                    particle.explode(self.xcor(), self.ycor())
-                self.status = 'crashed'
-
-        # Player collides into other player.
-        # Covers speed increase, thus 2 positions are checked
-        for position in self.positions[-2:]:
-            if position in other.positions:
-                self.lives -= 1
-                # Particle explosion
-                for particle in particles:
-                    particle.change_color(self)
-                    particle.explode(self.xcor(), self.ycor())
-                self.status = 'crashed'
-
     def crash(self):
         '''Removes lightcycle from screen'''
         self.penup()
@@ -313,7 +309,7 @@ class Player(turtle.Turtle):
     def respawn(self):
         '''Respawns light cycle to default location, resets speed to 1, and
         resets the positions'''
-        self.status = 'ready'
+        Player.status = 'ready'
         self.setposition(self.start_x, self.start_y)
         self.setheading(random.randrange(0, 360, 90))
         self.fd_speed = 1
@@ -322,8 +318,7 @@ class Player(turtle.Turtle):
 
     def player_crashed(self, other):
         '''If either player crashes'''
-
-        # print('Last 10 P2 positions: ', P2.positions[-10:])
+        # print('Last 10 P2 positions: ', self.P2.positions[-10:])
         self.crash()
         other.crash()
 
@@ -359,9 +354,6 @@ class Particle(turtle.Turtle):
         pencolor, fillcolor = player.color()
         self.color(pencolor)
 
-def start(width, height):
-    gameplay = Game(width, height)
-
-
 if __name__ == '__main__':
-    gameplay = Game()
+    gameObj = Game()
+    gameObj.start_game()
