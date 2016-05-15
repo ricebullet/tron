@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import turtle, game, os
+import turtle, game, os, sys
 
 class MainMenu(object):
     '''Main menu creates a 800 x 600 window to allow you to view the controls,
@@ -143,5 +143,7 @@ class MainMenu(object):
             self.keyboard_bindings()
 
 if __name__ == '__main__':
+    if sys.version_info[0] < 3:
+        raise SystemExit('Python 3 required!')
     game_on = False
     menu = MainMenu()
