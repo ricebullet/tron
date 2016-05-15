@@ -191,6 +191,7 @@ class Game(object):
         game_on = True
         if os.name == 'posix':
             os.system('afplay son_of_flynn.wav&')
+        os.system('say initiate light cycle battle')
         while P1.lives > 0 and P2.lives > 0:
             # Updates screen only when loop is complete
             turtle.update()
@@ -212,13 +213,13 @@ class Game(object):
             P1.positions.append(P1.coord)
             if len(P1.positions) > 2:
                 self.position_range_adder(P1.positions)
-            P1.is_collision(P2)
+                P1.is_collision(P2)
 
             P2.convert_coord_to_int()
             P2.positions.append(P2.coord)
             if len(P2.positions) > 2:
                 self.position_range_adder(P2.positions)
-            P2.is_collision(P1)
+                P2.is_collision(P1)
 
 
             # print('Last 5 positions: ', P2.positions[-5:])
@@ -283,13 +284,14 @@ class Player(turtle.Turtle):
     def is_collision(self, other):
         '''Collision check'''
         # Player collides into own trail (suicide)
-        if self.coord in self.positions[:-10]: # Checks the last positions too quickly
-            self.lives -= 1
-            # Particle explosion
-            for particle in particles:
-                particle.change_color(self)
-                particle.explode(self.xcor(), self.ycor())
-            self.status = 'crashed'
+        for position in self.positions[-4:]:
+            if position in self.positions[:-4]: # Checks the last positions too quickly
+                self.lives -= 1
+                # Particle explosion
+                for particle in particles:
+                    particle.change_color(self)
+                    particle.explode(self.xcor(), self.ycor())
+                self.status = 'crashed'
 
         # Player collides into other player.
         # Covers speed increase, thus 2 positions are checked

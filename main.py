@@ -106,6 +106,7 @@ class MainMenu(object):
                 turtle.bye()
             else:
                 pass
+                
         elif self.current_screen == 'grid_size':
             if self.pen.cursor_pos == 1:
                 width, height = (640, 480)
