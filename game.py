@@ -211,7 +211,7 @@ class Game(object):
         if os.name == 'posix':
             os.system('afplay son_of_flynn.m4a&')
             os.system('say initiate light cycle battle')
-        while self.P1.lives > 4 and self.P2.lives > 4:
+        while self.P1.lives > 0 and self.P2.lives > 0:
             # Updates screen only when loop is complete
             turtle.update()
             # Set default player speed
