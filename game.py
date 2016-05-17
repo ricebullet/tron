@@ -2,15 +2,13 @@
 
 import turtle, random, time, os, main
 
-# Welcome to TRON! The object of the game is to stay alive the longest by not crashing into the walls
+# Welcome to Turtle TRON! The object of the game is to stay alive the longest by not crashing into the walls
 # or the opponent's trails. Game resets when either player crashes.
 # Options: Grid size
 
-# Need to work on global static variables
-
 class Game(object):
     '''Creates screen, draws border, creates all sprites, maps keys, draws score, and
-    game loop runs.'''
+    runs game loop.'''
 
     game_on = False
 
@@ -34,8 +32,8 @@ class Game(object):
                 print('{} is not a valid size.'.format(size))
 
     def create_screen(self):
-        '''If run directly, based on user choice from self.screen_size, screen is created
-        Otherwise, screen is automatically created with arguments from main menu script.'''
+        '''If run directly, creates screen based on user choice from self.screen_size().
+        Otherwise, screen is automatically created with arguments from main.py script.'''
         if not self.width or not self.height:
             self.width, self.height = self.screen_size()
         self.screen = turtle.Screen()
@@ -47,7 +45,7 @@ class Game(object):
     def draw_border(self):
         '''Border is drawn from the width and height, starting in upper
         right hand corner. Each side is 50 pixels from the edge of the screen.
-         The border coordinates will be used for border detection as well.'''
+        The border coordinates will be used for border detection as well.'''
         self.x_boundary = (self.width / 2) - 50
         self.y_boundary = (self.height / 2) - 50
         self.pen.color('blue')
@@ -75,10 +73,10 @@ class Game(object):
         Deviation of 3 on edge to cosmetically match impact.'''
         if ((player.xcor() < (-self.x_boundary + 3)) or (player.xcor() > (self.x_boundary - 3)) or
             (player.ycor() < (-self.y_boundary + 3)) or (player.ycor() > (self.y_boundary - 3))):
-                player.lives -= 1
                 for particle in self.particles:
                     particle.change_color(player)
                     particle.explode(player.xcor(), player.ycor())
+                player.lives -= 1
                 player.status = player.CRASHED
 
     def position_range_adder(self, player_positions):
@@ -101,6 +99,7 @@ class Game(object):
             for y_position in range(start, end):
                 coord = (prev_x_pos, y_position)
                 positions_range.append(coord)
+        # Unique coordinates to add
         if positions_range:
             for position in positions_range:
                 if position not in player_positions:
@@ -120,7 +119,7 @@ class Game(object):
         self.P2.color('#E3E329')
 
     def create_particles(self):
-        '''Creates particles list. All particles act same way.'''
+        '''Creates particles list. All particles act in same manner.'''
         self.particles = []
         # Number of particles
         for i in range(20):
@@ -173,8 +172,8 @@ class Game(object):
         self.score_pen.setposition((self.width / -2) + 75, (self.height / 2) - 40)
         self.score_pen.pendown()
         self.score_pen.color('white')
-        p1lives = 'P1 Lives: %s' % self.P1.lives
-        p2lives = 'P2 Lives: %s' % self.P2.lives
+        p1lives = 'P1: %s' % (self.P1.lives * '*')
+        p2lives = 'P2: %s' % (self.P2.lives * '*')
         self.score_pen.write(p1lives, font=("Verdana", 18, "bold"))
         self.score_pen.penup()
         self.score_pen.hideturtle()
@@ -214,7 +213,7 @@ class Game(object):
         while self.P1.lives > 0 and self.P2.lives > 0:
             # Updates screen only when loop is complete
             turtle.update()
-            # Set default player speed
+            # Set players into motion
             self.P1.forward(self.P1.fd_speed)
             self.P2.forward(self.P2.fd_speed)
 
@@ -242,7 +241,7 @@ class Game(object):
                 self.is_collision(self.P2, self.P1)
 
             if self.P1.status == self.P1.CRASHED or self.P2.status == self.P2.CRASHED:
-                self.P1.player_crashed(self.P2)
+                self.P1.reset_players(self.P2)
                 if os.name == 'posix':
                     os.system('afplay explosion.wav&')
                 self.draw_score()
@@ -302,14 +301,14 @@ class Player(turtle.Turtle):
         self.coord = (x, y)
 
     def crash(self):
-        '''Removes lightcycle from screen'''
+        '''Removes light cycle from screen'''
         self.penup()
         self.clear()
         self.respawn()
 
     def respawn(self):
         '''Respawns light cycle to default location, resets speed to 1, and
-        resets the positions'''
+        resets the position list.'''
         self.status = self.READY
         self.setposition(self.start_x, self.start_y)
         self.setheading(random.randrange(0, 360, 90))
@@ -317,8 +316,8 @@ class Player(turtle.Turtle):
         self.pendown()
         self.positions = []
 
-    def player_crashed(self, other):
-        '''If either player crashes'''
+    def reset_players(self, other):
+        '''Resets both players'''
         self.crash()
         other.crash()
 
@@ -328,7 +327,7 @@ class Particle(turtle.Turtle):
     def __init__(self, spriteshape, color, start_x, start_y):
         turtle.Turtle.__init__(self, shape = spriteshape)
         self.shapesize(stretch_wid=.1, stretch_len=.3, outline=None)
-        self.speed(0)
+        self.speed(0) # Refers to animation speed
         self.penup()
         self.color(color)
         self.fd_speed = 10

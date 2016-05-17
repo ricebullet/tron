@@ -10,7 +10,6 @@ class MainMenu(object):
     game_on = False
 
     def __init__(self):
-
         self.keyboard_bindings()
 
     def create_screen(self):
@@ -73,8 +72,8 @@ class MainMenu(object):
         else:
             pass
         # Apply special function to return or space
-        turtle.onkeypress(self.press_enter, 'Return')
-        turtle.onkeypress(self.press_enter, 'space')
+        turtle.onkeypress(self.press_enter_or_space, 'Return')
+        turtle.onkeypress(self.press_enter_or_space, 'space')
 
     def display_controls(self):
         '''Displays control screen. Nothing can be changed.'''
@@ -94,8 +93,8 @@ class MainMenu(object):
         self.current_screen = 'grid_size'
         self.screen.bgpic('grid_size.gif')
 
-    def press_enter(self):
-        '''Depending on the screen, controls how the enter and space keys function'''
+    def press_enter_or_space(self):
+        '''Depending on the current screen, controls how the enter and space keys function'''
         if self.current_screen == 'main':
             if self.pen.cursor_pos == 3:
                 self.display_grid_options()
@@ -125,10 +124,12 @@ class MainMenu(object):
             # Start game
             self.start_game(width, height)
             # Game finishes and returns to menu
-            # menu = MainMenu()
+            self.current_screen = 'main'
             menu.start_menu()
-        else: # Current screen: Controls
+        elif self.current_screen == 'controls':
             self.display_main()
+        else:
+            pass
 
     def start_game(self, width, height):
         '''Starts the game with grid size choice.'''
@@ -136,8 +137,8 @@ class MainMenu(object):
         gameObj.start_game()
 
     def start_menu(self):
-        '''Main menu loop'''
-        self.current_screen = 'main'
+        '''Main menu loop. Creates cursor, displays main menu, and plays bgm.'''
+        self.create_screen()
         self.pen = turtle.Turtle()
         self.pen.shapesize(stretch_wid=3, stretch_len=3, outline=None)
         self.pen.cursor_pos = 3
@@ -148,7 +149,6 @@ class MainMenu(object):
         if os.name == 'posix':
             os.system('killall afplay')
             os.system('afplay main_menu.m4a&')
-        self.create_screen()
         # Change cursor position based on keybindings
         while True:
             turtle.update()
