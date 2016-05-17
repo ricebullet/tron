@@ -119,7 +119,7 @@ class Game(object):
         self.P2.speed(0)
         self.P2.color('#E3E329')
 
-    def particle_creation(self):
+    def create_particles(self):
         '''Creates particles list. All particles act same way.'''
         self.particles = []
         # Number of particles
@@ -133,18 +133,18 @@ class Game(object):
             particle.explode(player.xcor(), player.ycor())
 
     def is_collision(self, player, other):
-        '''Collision check'''
+        '''Collision check. Self and with other player.'''
         # Player collides into own trail (suicide)
-        for position in player.positions[-4:]:
-            if position in player.positions[:-4]: # Checks the last positions too quickly
+        for position in player.positions[-3:]: # 3 positions to cover speed gap (0 - 2)
+            if position in player.positions[:-3]:
                 player.lives -= 1
                 # Particle explosion
                 self.particles_explode(player)
                 player.status = player.CRASHED
 
         # Player collides into other player.
-        # Covers speed increase, thus 2 positions are checked
-        for position in player.positions[-2:]:
+        # Covers speed increase, thus 3 positions are checked
+        for position in player.positions[-3:]:
             if position in other.positions:
                 player.lives -= 1
                 # Particle explosion
@@ -175,12 +175,12 @@ class Game(object):
         self.score_pen.color('white')
         p1lives = 'P1 Lives: %s' % self.P1.lives
         p2lives = 'P2 Lives: %s' % self.P2.lives
-        self.score_pen.write(p1lives, font=("Arial", 18, "bold"))
+        self.score_pen.write(p1lives, font=("Verdana", 18, "bold"))
         self.score_pen.penup()
         self.score_pen.hideturtle()
-        self.score_pen.setposition((self.width / -2) + 190, (self.height / 2) - 40)
+        self.score_pen.setposition((self.width / -2) + 205, (self.height / 2) - 40)
         self.score_pen.pendown()
-        self.score_pen.write(p2lives, font=("Arial", 18, "bold"))
+        self.score_pen.write(p2lives, font=("Verdana", 18, "bold"))
         self.score_pen.penup()
         self.score_pen.hideturtle()
 
@@ -192,7 +192,7 @@ class Game(object):
             winner = player.name
         else:
             winner = other.name
-        self.score_pen.write(winner + ' wins!', align='center', font=("Arial", 36, "bold"))
+        self.score_pen.write(winner + ' wins!', align='center', font=("Verdana", 36, "bold"))
 
     def start_game(self):
         '''All players are set into motion, boundary checks, and collision checks
@@ -203,11 +203,11 @@ class Game(object):
         self.draw_border()
         self.create_player()
         self.set_keyboard_bindings()
-        self.particle_creation()
+        self.create_particles()
         self.score_pen = turtle.Turtle()
         self.draw_score()
+        self.game_on = True
         # Start bgm
-        Game.game_on = True
         if os.name == 'posix':
             os.system('afplay son_of_flynn.m4a&')
             os.system('say initiate light cycle battle')
@@ -222,24 +222,24 @@ class Game(object):
             for particle in self.particles:
                 particle.move()
 
-            # P1 Boundary check
+            # Player boundary checks
             self.boundary_check(self.P1)
-            # P2 Boundary check
             self.boundary_check(self.P2)
 
             # Coercing coordinates and appending to list
             self.P1.convert_coord_to_int()
             self.P1.positions.append(self.P1.coord)
+            # Start evaluating positions for gaps
             if len(self.P1.positions) > 2:
                 self.position_range_adder(self.P1.positions)
                 self.is_collision(self.P1, self.P2)
 
             self.P2.convert_coord_to_int()
             self.P2.positions.append(self.P2.coord)
+            # Start evaluating positions for gaps
             if len(self.P2.positions) > 2:
                 self.position_range_adder(self.P2.positions)
                 self.is_collision(self.P2, self.P1)
-            # print('Last 5 positions: ', self.P2.positions[-5:])
 
             if self.P1.status == self.P1.CRASHED or self.P2.status == self.P2.CRASHED:
                 self.P1.player_crashed(self.P2)
@@ -319,7 +319,6 @@ class Player(turtle.Turtle):
 
     def player_crashed(self, other):
         '''If either player crashes'''
-        # print('Last 10 P2 positions: ', self.P2.positions[-10:])
         self.crash()
         other.crash()
 
