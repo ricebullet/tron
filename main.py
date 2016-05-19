@@ -92,6 +92,8 @@ class MainMenu(object):
         self.pen.cursor_pos = 2
         self.current_screen = 'grid_size'
         self.screen.bgpic('grid_size.gif')
+        if os.name == 'posix':
+            os.system('say choose your grid size.&')
 
     def press_enter_or_space(self):
         '''Depending on the current screen, controls how the enter and space keys function'''

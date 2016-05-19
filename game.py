@@ -209,7 +209,7 @@ class Game(object):
         # Start bgm
         if os.name == 'posix':
             os.system('afplay son_of_flynn.m4a&')
-            os.system('say initiate light cycle battle')
+            os.system('say grid is live!')
         while self.P1.lives > 0 and self.P2.lives > 0:
             # Updates screen only when loop is complete
             turtle.update()
