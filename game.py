@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import turtle, random, time, os, main
+import turtle, random, time, os
 
 # Welcome to Turtle TRON! The object of the game is to stay alive the longest by not crashing into the walls
 # or the opponent's trails. Game resets when either player crashes.
@@ -208,7 +208,7 @@ class Game(object):
         self.game_on = True
         # Start bgm
         if os.name == 'posix':
-            os.system('afplay son_of_flynn.m4a&')
+            os.system('afplay sounds/son_of_flynn.m4a&')
             os.system('say grid is live!')
         while self.P1.lives > 0 and self.P2.lives > 0:
             # Updates screen only when loop is complete
@@ -243,7 +243,7 @@ class Game(object):
             if self.P1.status == self.P1.CRASHED or self.P2.status == self.P2.CRASHED:
                 self.P1.reset_players(self.P2)
                 if os.name == 'posix':
-                    os.system('afplay explosion.wav&')
+                    os.system('afplay sounds/explosion.wav&')
                 self.draw_score()
         # Game ends
         self.display_winner(self.P1, self.P2)

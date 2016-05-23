@@ -18,7 +18,7 @@ class MainMenu(object):
         self.width, self.height = (800, 600)
         self.screen = turtle.Screen()
         self.screen.bgcolor('black')
-        self.screen.bgpic('main_menu.gif')
+        self.screen.bgpic('images/main_menu.gif')
         self.screen.setup(self.width, self.height, startx=None, starty=None)
         self.screen.title('TRON')
         self.screen.tracer(0)
@@ -79,19 +79,19 @@ class MainMenu(object):
         '''Displays control screen. Nothing can be changed.'''
         self.current_screen = 'controls'
         self.pen.hideturtle()
-        self.screen.bgpic('controls.gif')
+        self.screen.bgpic('images/controls.gif')
 
     def display_main(self):
         '''Displays the main menu.'''
         self.current_screen = 'main'
-        self.screen.bgpic('main_menu.gif')
+        self.screen.bgpic('images/main_menu.gif')
         self.pen.showturtle()
 
     def display_grid_options(self):
         '''Displays grid size options, after selecting to start.'''
         self.pen.cursor_pos = 2
         self.current_screen = 'grid_size'
-        self.screen.bgpic('grid_size.gif')
+        self.screen.bgpic('images/grid_size.gif')
         if os.name == 'posix':
             os.system('say choose your grid size.&')
 
@@ -150,7 +150,7 @@ class MainMenu(object):
         # Stop music when returning from game and restart main menu music
         if os.name == 'posix':
             os.system('killall afplay')
-            os.system('afplay main_menu.m4a&')
+            os.system('afplay sounds/main_menu.m4a&')
         # Change cursor position based on keybindings
         while True:
             turtle.update()
