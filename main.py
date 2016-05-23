@@ -8,6 +8,7 @@ class MainMenu(object):
 
     current_screen = 'main'
     game_on = False
+    relative_controls = True
 
     def __init__(self):
         self.keyboard_bindings()
@@ -25,30 +26,49 @@ class MainMenu(object):
 
     def set_cursor(self):
         """
-        Controlled by cursor_up and cursor_down functions.
-        Main: Start = 3, Controls = 2, Quit = 1
-        Grid Size: Small = 1, Medium = 2, Large = 3
-        Controls: None. Hides turtle. Only return key functions."""
+        Runs in start menu loop. Controlled by cursor_up and cursor_down functions.
+        """
         if self.current_screen == 'main':
-            if self.pen.cursor_pos == 1:
-                self.pen.setposition(-50, -130)
-            elif self.pen.cursor_pos == 2:
-                self.pen.setposition(-80, -15)
-            else: # Position 3
-                self.pen.setposition(-50, 95)
+            self.set_cursor_main()
         elif self.current_screen == 'grid_size':
-            if self.pen.cursor_pos == 1:
-                self.pen.setposition(-310, -15)
-            elif self.pen.cursor_pos == 2:
-                self.pen.setposition(-75, -15)
-            else: # Position 3
-                self.pen.setposition(195, -15)
+            self.set_cursor_grid_size()
+        elif self.current_screen == 'controls':
+            self.set_cursor_controls()
         else:
             pass
 
+    def set_cursor_main(self):
+        '''Main: Start = 3, Controls = 2, Quit = 1'''
+        if self.pen.cursor_pos == 1:
+            self.pen.setposition(-50, -130)
+        elif self.pen.cursor_pos == 2:
+            self.pen.setposition(-80, -15)
+        else: # Position 3
+            self.pen.setposition(-50, 95)
+
+    def set_cursor_controls(self):
+        '''Controls: Relative = 1, Absolute = 2.'''
+        if self.pen.cursor_pos == 1:
+            self.pen.setposition(-285, -215)
+        else:
+            self.pen.setposition(145, -215)
+        self.display_controls()
+
+
+    def set_cursor_grid_size(self):
+        '''Grid Size: Small = 1, Medium = 2, Large = 3'''
+        if self.pen.cursor_pos == 1:
+            self.pen.setposition(-310, -15)
+        elif self.pen.cursor_pos == 2:
+            self.pen.setposition(-75, -15)
+        else: # Position 3
+            self.pen.setposition(195, -15)
+
     def cursor_up(self):
-        '''Increase cursor pos by 1.'''
-        if self.pen.cursor_pos < 3:
+        '''Increase cursor pos by 1. Controls screen only has two options.'''
+        if self.current_screen == 'controls' and self.pen.cursor_pos < 2:
+            self.pen.cursor_pos += 1
+        elif self.pen.cursor_pos < 3:
             self.pen.cursor_pos += 1
 
     def cursor_down(self):
@@ -57,14 +77,16 @@ class MainMenu(object):
             self.pen.cursor_pos -= 1
 
     def keyboard_bindings(self):
-        '''Sets bindings depending on which screen is displayed.'''
+        '''Sets bindings depending on which screen is displayed. Either player
+        can control cursor.'''
         turtle.listen()
         if self.current_screen == 'main':
             turtle.onkeypress(self.cursor_up, 'Up')
             turtle.onkeypress(self.cursor_up, 'w')
             turtle.onkeypress(self.cursor_down, 'Down')
             turtle.onkeypress(self.cursor_down, 's')
-        elif self.current_screen == 'grid_size':
+        elif (self.current_screen == 'grid_size' or
+              self.current_screen == 'controls'):
             turtle.onkeypress(self.cursor_up, 'Right')
             turtle.onkeypress(self.cursor_up, 'd')
             turtle.onkeypress(self.cursor_down, 'Left')
@@ -75,26 +97,6 @@ class MainMenu(object):
         turtle.onkeypress(self.press_enter_or_space, 'Return')
         turtle.onkeypress(self.press_enter_or_space, 'space')
 
-    def display_controls(self):
-        '''Displays control screen. Nothing can be changed.'''
-        self.current_screen = 'controls'
-        self.pen.hideturtle()
-        self.screen.bgpic('images/controls.gif')
-
-    def display_main(self):
-        '''Displays the main menu.'''
-        self.current_screen = 'main'
-        self.screen.bgpic('images/main_menu.gif')
-        self.pen.showturtle()
-
-    def display_grid_options(self):
-        '''Displays grid size options, after selecting to start.'''
-        self.pen.cursor_pos = 2
-        self.current_screen = 'grid_size'
-        self.screen.bgpic('images/grid_size.gif')
-        if os.name == 'posix':
-            os.system('say choose your grid size.&')
-
     def press_enter_or_space(self):
         '''Depending on the current screen, controls how the enter and space keys function'''
         if self.current_screen == 'main':
@@ -102,6 +104,11 @@ class MainMenu(object):
                 self.display_grid_options()
             elif self.pen.cursor_pos == 2:
                 self.display_controls()
+                # Needed to show saved control setting
+                if self.relative_controls:
+                    self.pen.cursor_pos = 1
+                else:
+                    self.pen.cursor_pos = 2
             elif self.pen.cursor_pos == 1:
                 if os.name == 'posix':
                     os.system('killall afplay')
@@ -129,13 +136,39 @@ class MainMenu(object):
             self.current_screen = 'main'
             menu.start_menu()
         elif self.current_screen == 'controls':
+            if self.pen.cursor_pos == 1:
+                self.relative_controls = True
+            else:
+                self.relative_controls = False
+            self.pen.cursor_pos = 2 # Return to last main menu position
             self.display_main()
+
+    def display_controls(self):
+        '''Displays control screen. User can choose between relative or absolute
+        control scheme.'''
+        self.current_screen = 'controls'
+        if self.pen.cursor_pos == 1:
+            self.screen.bgpic('images/controls_relative.gif')
         else:
-            pass
+            self.screen.bgpic('images/controls_absolute.gif')
+
+    def display_main(self):
+        '''Displays the main menu.'''
+        self.current_screen = 'main'
+        self.screen.bgpic('images/main_menu.gif')
+        self.pen.showturtle()
+
+    def display_grid_options(self):
+        '''Displays grid size options, after selecting to start.'''
+        self.pen.cursor_pos = 2
+        self.current_screen = 'grid_size'
+        self.screen.bgpic('images/grid_size.gif')
+        if os.name == 'posix':
+            os.system('say choose your grid size.&')
 
     def start_game(self, width, height):
-        '''Starts the game with grid size choice.'''
-        gameObj = game.Game(width, height)
+        '''Starts the game with grid size choice and control setting.'''
+        gameObj = game.Game(width, height, self.relative_controls)
         gameObj.start_game()
 
     def start_menu(self):
@@ -146,7 +179,6 @@ class MainMenu(object):
         self.pen.cursor_pos = 3
         self.pen.pencolor('#40BBE3')
         self.pen.penup()
-        self.game_on = False
         # Stop music when returning from game and restart main menu music
         if os.name == 'posix':
             os.system('killall afplay')

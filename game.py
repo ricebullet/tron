@@ -6,15 +6,19 @@ import turtle, random, time, os
 # or the opponent's trails. Game resets when either player crashes.
 # Options: Grid size
 
+# Currently set to relative key bindings. I need the menu class to save a class attribute
+# that stores the controls setting.
+
 class Game(object):
     '''Creates screen, draws border, creates all sprites, maps keys, draws score, and
     runs game loop.'''
 
     game_on = False
 
-    def __init__(self,width=None,height=None):
+    def __init__(self, width=None, height=None, relative_controls=True):
         self.width = width
         self.height = height
+        self.relative_controls = relative_controls
 
     def screen_size(self):
         '''Only used if script runs directly.'''
@@ -150,8 +154,8 @@ class Game(object):
                 self.particles_explode(player)
                 player.status = player.CRASHED
 
-    def set_keyboard_bindings(self):
-        '''Maps keys to player movement.'''
+    def set_relative_keyboard_bindings(self):
+        '''Maps relative controls to player movement.'''
         turtle.listen()
         # Set P1 keyboard bindings
         turtle.onkeypress(self.P1.turn_left, 'a')
@@ -164,6 +168,53 @@ class Game(object):
         turtle.onkeypress(self.P2.turn_right, 'Right')
         turtle.onkeypress(self.P2.accelerate, 'Up')
         turtle.onkeypress(self.P2.decelerate, 'Down')
+
+    def set_abs_keyboard_bindings(self):
+        '''Maps absolute controls to player movement.'''
+        turtle.listen()
+        # Set P1 keyboard bindings
+        if self.P1.heading() == 0: # East
+            turtle.onkeypress(self.P1.turn_left, 'w')
+            turtle.onkeypress(self.P1.turn_right, 's')
+            turtle.onkeypress(self.P1.accelerate, 'd')
+            turtle.onkeypress(self.P1.decelerate, 'a')
+        elif self.P1.heading() == 90: # North
+            turtle.onkeypress(self.P1.turn_left, 'a')
+            turtle.onkeypress(self.P1.turn_right, 'd')
+            turtle.onkeypress(self.P1.accelerate, 'w')
+            turtle.onkeypress(self.P1.decelerate, 's')
+        elif self.P1.heading() == 180: # West
+            turtle.onkeypress(self.P1.turn_left, 's')
+            turtle.onkeypress(self.P1.turn_right, 'w')
+            turtle.onkeypress(self.P1.accelerate, 'a')
+            turtle.onkeypress(self.P1.decelerate, 'd')
+        elif self.P1.heading() == 270: # South
+            turtle.onkeypress(self.P1.turn_left, 'd')
+            turtle.onkeypress(self.P1.turn_right, 'a')
+            turtle.onkeypress(self.P1.accelerate, 's')
+            turtle.onkeypress(self.P1.decelerate, 'w')
+        # Set P1 keyboard bindings
+        if self.P2.heading() == 0: # East
+            turtle.onkeypress(self.P2.turn_left, 'Up')
+            turtle.onkeypress(self.P2.turn_right, 'Down')
+            turtle.onkeypress(self.P2.accelerate, 'Right')
+            turtle.onkeypress(self.P2.decelerate, 'Left')
+        elif self.P2.heading() == 90: # North
+            turtle.onkeypress(self.P2.turn_left, 'Left')
+            turtle.onkeypress(self.P2.turn_right, 'Right')
+            turtle.onkeypress(self.P2.accelerate, 'Up')
+            turtle.onkeypress(self.P2.decelerate, 'Down')
+        elif self.P2.heading() == 180: # West
+            turtle.onkeypress(self.P2.turn_left, 'Down')
+            turtle.onkeypress(self.P2.turn_right, 'Up')
+            turtle.onkeypress(self.P2.accelerate, 'Left')
+            turtle.onkeypress(self.P2.decelerate, 'Right')
+        elif self.P2.heading() == 270: # South
+            turtle.onkeypress(self.P2.turn_left, 'Right')
+            turtle.onkeypress(self.P2.turn_right, 'Left')
+            turtle.onkeypress(self.P2.accelerate, 'Down')
+            turtle.onkeypress(self.P2.decelerate, 'Up')
+
 
     def draw_score(self):
         '''Using a turtle, this draws the score on the screen once, then clears once
@@ -201,7 +252,6 @@ class Game(object):
         self.pen = turtle.Turtle()
         self.draw_border()
         self.create_player()
-        self.set_keyboard_bindings()
         self.create_particles()
         self.score_pen = turtle.Turtle()
         self.draw_score()
@@ -210,9 +260,16 @@ class Game(object):
         if os.name == 'posix':
             os.system('afplay sounds/son_of_flynn.m4a&')
             os.system('say grid is live!')
+
         while self.P1.lives > 0 and self.P2.lives > 0:
             # Updates screen only when loop is complete
             turtle.update()
+            # Set controls based on menu setting
+            if self.relative_controls:
+                self.set_relative_keyboard_bindings()
+            else:
+                self.set_abs_keyboard_bindings()
+
             # Set players into motion
             self.P1.forward(self.P1.fd_speed)
             self.P2.forward(self.P2.fd_speed)
